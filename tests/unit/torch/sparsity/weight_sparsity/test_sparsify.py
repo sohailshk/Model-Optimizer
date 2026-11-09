@@ -18,6 +18,7 @@ import copy
 import pytest
 from _test_utils.torch.misc import compare_outputs
 from _test_utils.torch.nas_prune.models import BaseExampleModel, get_example_models
+from torch import nn
 
 import modelopt.torch.opt as mto
 import modelopt.torch.sparsity as mts
@@ -113,3 +114,9 @@ def test_specify_forward_loop():
     # try specifying both
     with pytest.raises(AssertionError, match="Only provide `data_loader` or `forward_loop`!"):
         searcher.search(model, {}, (), {**config_data_loader, **config_loop})
+
+
+def test_unsupported_pattern():
+    model = nn.Sequential(nn.Linear(32, 16))
+    with pytest.raises(AssertionError, match="Unsupported pattern 4:8 sparsity for sparsity"):
+        mts.sparsify(model, "sparse_magnitude", {"pattern": "4:8 sparsity"})
